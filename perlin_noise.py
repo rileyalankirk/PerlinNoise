@@ -217,7 +217,7 @@ def generate_gradient_projections_3d(x, y, z, frequency, seed=None):
 
     return gradient_projs, x, y, z
 
-def perlin_noise_3d(x, y, z, frequency, seed=None): 
+def perlin_noise_3d(x, y, z, frequency, seed=None):
     """Generates 3D Perlin noise.
 
     Arguments:
@@ -251,17 +251,17 @@ def perlin_noise_3d(x, y, z, frequency, seed=None):
     g011 =     x_vals*g011[:, 0] + (y_vals - 1)*g011[:, 1] + (z_vals-1)*g011[:, 2]
     g111 = (x_vals-1)*g111[:, 0] + (y_vals - 1)*g111[:, 1] + (z_vals-1)*g111[:, 2]
 
-    # X-Direction Linear Interpolations
+    # X-direction linear interpolations
     g00 = g000 + tx*(g100 - g000)
     g01 = g001 + tx*(g101 - g001)
     g10 = g010 + tx*(g110 - g010)
     g11 = g011 + tx*(g111 - g011)
 
-    # Y-Direction Linear Interpolations
+    # Y-direction linear interpolations
     g0 = g00 + ty*(g10 - g00)
     g1 = g01 + ty*(g11 - g01)
 
-    # Z-Direction Linear Interpolation
+    # Z-direction linear interpolation
     g = g0 + tz*(g1 - g0)
 
     return g.reshape(x, y, z)
