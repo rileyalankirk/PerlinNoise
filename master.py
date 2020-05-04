@@ -13,22 +13,18 @@ def main():
     perlin_iterations = 10
     size = [20,20,20]
 
-    # Create tasks to do banded perlin noise
-    perlin_results = []
-    for i in range(perlin_iterations):
-        perlin_results.append(cave_gen_worker.generate_perlin_noise.delay(size[0], size[1], size[2], 2.0, 1.0, seed=2556))
-
-    # Now go through all tasks, average results together to finish banded perlin noise
+    # Create tasks to do banded perlin noise, and then through all results and average them together to finish banded perlin noise
     environment = np.zeros((size[0],size[1],size[2]))
-    for result in perlin_results:
-        environment += np.array(pickle.loads(result.get())) / perlin_iterations
-    print(environment.shape)
+    data = [[size[0], size[1], size[2], 2.0, 1.0]]*perlin_iterations
+    for result in ~cave_gen_worker.generate_perlin_noise.starmap(zip(data)):
+        environment += np.array(pickle.loads(result)) / perlin_iterations
+
     # Getting all data to be above 0 for marching cubes
     environment = environment + np.abs(np.min(environment))
     environment = environment.reshape(size[0],size[1],size[2])
 
 
-    marching_cubes_results = []
+    cubes_data = []
 
     # Getting threshold to render marching cubes at.
     threshold = np.mean(environment)
@@ -48,16 +44,16 @@ def main():
         slice on to the slice that comes before it
         '''
         if end_index >= size[0]-2:
-            marching_cubes_results.append(cave_gen_worker.build_marching_cube_mesh.delay(environment[start_index:], threshold, [start_index, 0, 0]))
+            cubes_data.append([environment[start_index:], threshold, [start_index, 0, 0]])
             break
-        marching_cubes_results.append(cave_gen_worker.build_marching_cube_mesh.delay(environment[start_index:end_index], threshold, [start_index, 0, 0]))
+        cubes_data.append([environment[start_index:end_index], threshold, [start_index, 0, 0]])
 
     vertices = []
     indices = []
 
-    # Now go through all marching cubes results and get vertices and indices data, add them all on
-    for result in marching_cubes_results:
-        new_vertices, new_indices = pickle.loads(result.get())
+    # Create marching cubes tasks and go through all results, getting vertices and indices data, add them all on
+    for result in ~cave_gen_worker.build_marching_cube_mesh.starmap(zip(cubes_data)):
+        new_vertices, new_indices = pickle.loads(result)
         new_indices = np.array(new_indices)
 
         new_indices += len(vertices)
