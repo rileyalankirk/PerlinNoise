@@ -9,6 +9,7 @@ app.config_from_object('config')
 
 @app.task
 def generate_perlin_noise(data):
+    # Since seed is optional, check if it was given or not
     seed = None
     if len(data) >= 6:
         seed = data[5]
@@ -20,9 +21,9 @@ def build_marching_cube_mesh(data):
     grid = data[0]
     threshold = data[1]
     offset = data[2]
-    # Generates 3D Perlin noise
+    # Generating mesh with marching cubes
     vertices, indices = generate_mesh(grid, threshold)
+    # Adding offset to vertices, since each task won't know which area the subpspace it's working on actually comes from
     vertices = np.array(vertices)
-    indices = np.array(indices)
     vertices += np.array(offset)
     return pickle.dumps((vertices, indices))

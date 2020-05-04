@@ -19,7 +19,7 @@ def main():
     for result in ~cave_gen_worker.generate_perlin_noise.starmap(zip(data)):
         environment += np.array(pickle.loads(result)) / perlin_iterations
 
-    # Getting all data to be above 0 for marching cubes
+    # Getting all data to be above 0 for marching cubes program
     environment = environment + np.abs(np.min(environment))
     environment = environment.reshape(size[0],size[1],size[2])
 
@@ -29,8 +29,9 @@ def main():
     # Getting threshold to render marching cubes at.
     threshold = np.mean(environment)
 
-    # Now we need to split the data up into slices to send out as separate tasks
+    # Now we need to split the data up into slices for sending out as separate tasks
     group_size = size[0]//cube_tasks
+    # Want to make sure the group size is at least 2, since if it were 1 or 0 we wouldn't be sending any actual cubes
     if group_size < 2:
         group_size = 2
     for i in range(cube_tasks):
@@ -51,11 +52,13 @@ def main():
     vertices = []
     indices = []
 
-    # Create marching cubes tasks and go through all results, getting vertices and indices data, add them all on
+    # Create marching cubes tasks and go through all results
     for result in ~cave_gen_worker.build_marching_cube_mesh.starmap(zip(cubes_data)):
+        # Get vertices and indices data generated
         new_vertices, new_indices = pickle.loads(result)
         new_indices = np.array(new_indices)
 
+        # Add on the vertices and indices to our lists
         new_indices += len(vertices)
         vertices += list(new_vertices)
         indices += list(new_indices)
