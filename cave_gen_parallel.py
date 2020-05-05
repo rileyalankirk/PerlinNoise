@@ -8,7 +8,7 @@ from time import monotonic
 def main():
 
     cube_tasks = 10
-    perlin_iterations = 10
+    perlin_iterations = 100
     size = [20,20,20]
     perlin_time = 0
     cubes_time = 0
@@ -20,19 +20,13 @@ def main():
     for result in ~cave_gen_worker.generate_perlin_noise.starmap(zip(data)):
         perlin_results.append(result)
     perlin_time += monotonic() - start
-    print("Total Time for Perlin Noise Calls:", perlin_time)
-    print("Perlin Noise Serial Average Time:", (perlin_time / perlin_iterations))
-
-    # Now go through all tasks, average results together to finish banded perlin noise
-    #environment = np.zeros((size[0],size[1],size[2]))
-    for result in perlin_results:
-         print(result.get())
-    #    environment += np.array(result) / perlin_iterations
-    #print(environment.shape)
+    print("Total Time for Perlin Noise Calls:", perlin_time, "seconds")
+    print("Perlin Noise Average Time:", (perlin_time / perlin_iterations), "seconds")
 
     # Getting all data to be above 0 for marching cubes
     environment = np.random.uniform(size=(size[0],size[1],size[2]))
     marching_cubes_results = []
+    cubes_data = []
 
     # Getting threshold to render marching cubes at.
     threshold = np.mean(environment)
@@ -52,9 +46,8 @@ def main():
     for result in ~cave_gen_worker.build_marching_cube_mesh.starmap(zip(cubes_data)):
         marching_cubes_results.append(result)    
     cubes_time += monotonic() - start
-    print(cubes_time)
-    print("Total Time for Marching Squares Calls:", (cubes_time / 60))
-    print("Marching Squares Serial Average Time:", (cubes_time / cube_tasks))
+    print("Total Time for Marching Squares Calls:", (cubes_time / 60), "minutes (" + str(cubes_time) + " seconds)")
+    print("Marching Squares Average Time:", (cubes_time / cube_tasks), "seconds")
 
 if __name__ == "__main__":
     main()
