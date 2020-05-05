@@ -13,7 +13,7 @@ def main():
     perlin_time = 0
     cubes_time = 0
 
-    # Create tasks to do banded perlin noise
+    # Create data for starmap and get results
     perlin_results = []
     data = [[size[0], size[1], size[2], 2.0, 1.0]]*perlin_iterations
     start = monotonic()
